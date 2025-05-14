@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Administração - Monitoria</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <div class="max-w-5xl mx-auto mt-10 p-6 bg-gray-800 rounded shadow">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Painel de URLs</h1>
+      <button onclick="togglePause()" class="px-4 py-2 rounded <%= paused ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' %>">
+        <%= paused ? 'Continuar' : 'Pausar' %>
+      </button>
+    </div>
+
+    <form id="urlForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <input type="text" id="urlInput" class="p-2 rounded bg-gray-700 text-white" placeholder="https://site.com" required>
+      <input type="number" id="durationInput" class="p-2 rounded bg-gray-700 text-white" placeholder="Tempo (s)" min="1">
+      <input type="text" id="labelInput" class="p-2 rounded bg-gray-700 text-white" placeholder="Apelido (opcional)">
+      <input type="number" id="orderInput" class="p-2 rounded bg-gray-700 text-white" placeholder="Ordem" min="1">
+      <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Adicionar</button>
+    </form>
+
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block mb-1">Modo de rotação:</label>
+        <select id="rotationMode" class="p-2 bg-gray-700 text-white rounded w-full" onchange="changeRotationMode(this.value)">
+          <option value="reload" <%= config.rotationMode === 'reload' ? 'selected' : '' %>>Recarregar (goto)</option>
+          <option value="tabs" <%= config.rotationMode === 'tabs' ? 'selected' : '' %>>Alternar abas (bringToFront)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1">Porta do painel administrativo:</label>
+        <div class="flex gap-2">
+          <input type="number" id="portInput" value="<%= config.adminPort %>" class="p-2 rounded bg-gray-700 text-white w-full" min="1" max="65535">
+          <button onclick="changePort()" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">Alterar</button>
+        </div>
+      </div>
+    </div>
+
+    <ul id="urlList" class="space-y-4">
+      <% urls.forEach((u, i) => { %>
+        <li data-url="<%= u.url %>" class="flex items-center justify-between p-3 rounded <%= u.url === currentUrl ? 'border-4 border-yellow-400 bg-gray-600' : 'bg-gray-700' %>">
+          <div>
+            <div class="font-medium">
+              <span class="text-yellow-400 font-bold">#<%= u.order || i + 1 %></span> —
+              <% if (u.label) { %><strong><%= u.label %></strong> — <% } %>
+              <%= u.url %>
+            </div>
+            <div class="text-sm text-gray-300">Tempo: <%= u.duration || config.defaultDuration %>s</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editUrl(<%= i %>)" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded">Editar</button>
+            <button onclick="deleteUrl(<%= i %>)" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Remover</button>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+
+  <script>
+    const urls = <%- JSON.stringify(urls) %>;
+
+    document.getElementById('urlForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const url = document.getElementById('urlInput').value;
+      const duration = parseInt(document.getElementById('durationInput').value);
+      const label = document.getElementById('labelInput').value;
+      const order = parseInt(document.getElementById('orderInput').value);
+      await fetch('/add-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, duration, label, order })
+      });
+      window.location.reload();
+    });
+
+
+    async function deleteUrl(index) {
+      await fetch('/delete-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index })
+      });
+      window.location.reload();
+    }
+
+    async function editUrl(index) {
+      const item = urls[index];
+      const newUrl = prompt("Nova URL:", item.url);
+      const newDuration = parseInt(prompt("Novo tempo (s):", item.duration));
+      const newLabel = prompt("Novo apelido:", item.label || "");
+      const newOrder = parseInt(prompt("Nova ordem:", item.order || index + 1));
+      if (!newUrl || isNaN(newDuration) || isNaN(newOrder)) return;
+      await fetch('/edit-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index, url: newUrl, duration: newDuration, label: newLabel, order: newOrder })
+      });
+      window.location.reload();
+    }
+
+    async function togglePause() {
+      await fetch('/toggle-pause', { method: 'POST' });
+      window.location.reload();
+    }
+
+    async function changeRotationMode(mode) {
+      await fetch('/set-rotation-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode })
+      });
+    }
+
+    async function changePort() {
+      const port = parseInt(document.getElementById('portInput').value);
+      if (!port || port < 1 || port > 65535) return alert("Porta inválida.");
+      const confirmChange = confirm(`Alterar a porta para ${port}?\nO sistema será reiniciado.`);
+      if (!confirmChange) return;
+      await fetch('/set-admin-port', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ port })
+      });
+    }
+
+    function highlightCurrentCard(url) {
+      const cards = document.querySelectorAll('#urlList > li');
+      cards.forEach(card => {
+        if (card.dataset.url === url) {
+          card.classList.add('border-4', 'border-yellow-400', 'bg-gray-600');
+          card.classList.remove('bg-gray-700');
+        } else {
+          card.classList.remove('border-4', 'border-yellow-400', 'bg-gray-600');
+          card.classList.add('bg-gray-700');
+        }
+      });
+    }
+
+    setInterval(async () => {
+      const isTyping = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+      if (isTyping) return;
+
+      try {
+        const res = await fetch('/current.json');
+        if (res.ok) {
+          const { currentUrl } = await res.json();
+          highlightCurrentCard(currentUrl);
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar URL atual:", err.message);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

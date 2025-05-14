@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://www.corinthians.com.br/",
+    "duration": 5,
+    "label": "Corinthians",
+    "order": 1
+  },
+  {
+    "url": "https://www.flamengo.com.br/",
+    "duration": 5,
+    "label": "Flamengo",
+    "order": 2
+  },
+  {
+    "url": "https://www.palmeirasstore.com/?srsltid=AfmBOorpumrlYt2xAGglx6L_1cs5I29Y5KhYr__isE5Ca9VZVA3c8aVS",
+    "duration": 5,
+    "label": "Palmeiras",
+    "order": 3
+  },
+  {
+    "url": "https://www.pudim.com.br/",
+    "duration": 5,
+    "label": "Pudim",
+    "order": 4
+  }
+]
