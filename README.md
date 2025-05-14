@@ -7,11 +7,17 @@
 
 ---
 
-## 📸 Demonstração
+## 🖥️ Interface da Aplicação
 
-![Dashboard em rotação](https://user-images.githubusercontent.com/00000000/000000000-00000000-0000-000000000.png)
-> *Exemplo de painel em rotação com botão flutuante de acesso ao painel administrativo.*
+### 🔁 Página de Rotação Automática
 
+![Página de Rotação](assets/Monitoria_Pagina_de_Rotacao.jpg)
+
+---
+
+### 🛠️ Painel de Controle Administrativo
+
+![Painel de Controle](assets/Monitoria_PainelDeControle.jpg)
 ---
 
 ## 🚀 Funcionalidades
