@@ -10,13 +10,13 @@
 ## 🖥️ Interface da Aplicação
 
 ### 🔁 Página de Rotação Automática
-![Página de Rotação](assets/pagina-rotacao.jpg)
+![Página de Rotação](assets/PaginaDeRotacao.jpg)
 
 ---
 
 ### 🛠️ Painel de Controle Administrativo
 
-![Painel de Controle](assets/Monitoria_PainelDeControle.jpg)
+![Painel de Controle](assets/PainelDeControle.jpg)
 ---
 
 ## 🚀 Funcionalidades
