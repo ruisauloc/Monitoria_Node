@@ -10,7 +10,6 @@
 ## 🖥️ Interface da Aplicação
 
 ### 🔁 Página de Rotação Automática
-
 ![Página de Rotação](assets/Monitoria_Pagina_de_Rotacao.jpg)
 
 ---
